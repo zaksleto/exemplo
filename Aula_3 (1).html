@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aula 3</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+  <script>
+
+    tailwind.config = {
+      darkMode: "class", // Directly sets dark mode based on class
+      theme: {
+        extend: {
+          colors: {
+            // Base color definitions
+            background: "#ffffff",
+            foreground: "#0a0a0a",
+            card: {
+              DEFAULT: "#ffffff",
+              foreground: "#0a0a0a",
+            },
+            popover: {
+              DEFAULT: "#ffffff",
+              foreground: "#0a0a0a",
+            },
+            primary: {
+              DEFAULT: "#1a1a1a",
+              foreground: "#f7f7f7",
+            },
+            secondary: {
+              DEFAULT: "#f5f5f5",
+              foreground: "#1a1a1a",
+            },
+            muted: {
+              DEFAULT: "#f5f5f5",
+              foreground: "#737373",
+            },
+            accent: {
+              DEFAULT: "#f5f5f5",
+              foreground: "#1a1a1a",
+            },
+            destructive: {
+              DEFAULT: "#ff5e5e",
+              foreground: "#f7f7f7",
+            },
+            border: "#e4e4e4",
+            input: "#e4e4e4",
+            ring: "#0a0a0a",
+            chart: {
+              "1": "#eb6a56",
+              "2": "#3db4a6",
+              "3": "#2f5d80",
+              "4": "#f3c87c",
+              "5": "#f8a665",
+            },
+          },
+          borderRadius: {
+            lg: "0.5rem",
+            md: "0.375rem",
+            sm: "0.25rem",
+          },
+          keyframes: {
+            "accordion-down": {
+              from: { height: "0" },
+              to: { height: "var(--radix-accordion-content-height)" },
+            },
+            "accordion-up": {
+              from: { height: "var(--radix-accordion-content-height)" },
+              to: { height: "0" },
+            },
+          },
+          animation: {
+            "accordion-down": "accordion-down 0.2s ease-out",
+            "accordion-up": "accordion-up 0.2s ease-out",
+          },
+        },
+      },
+    };
+  </script>
+  
+</head>
+<body class="m-0">
+  <div id="root"></div>
+
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+  
+  <style>
+    * {  
+      font-family: "Geist", sans-serif;
+    }
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+  </style>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCEDYnhX-18ZnouAw-FnsP0FJG-YCLqRU",
+      authDomain: "banco-de-dados-quiz.firebaseapp.com",
+      projectId: "banco-de-dados-quiz",
+      storageBucket: "banco-de-dados-quiz.firebasestorage.app",
+      messagingSenderId: "1020633892626",
+      appId: "1",
+    };
+  
+    // Initialize Firebase
+    window.app = initializeApp(firebaseConfig);
+    window.firestore = getFirestore(app);
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.collection = collection;
+    window.addDoc = addDoc;
+  </script>
+  <script type="text/babel">
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    function SimpleSpinner({ size = 40 }) {
+      const spinnerStyle = {
+        width: `${size}px`,
+        height: `${size}px`,
+        border: `4px solid #f3f3f3`,
+        borderTop: `4px solid #3498db`,
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+      };
+
+      const keyframes = `
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `;
+
+      return React.createElement(
+        'div',
+        { style: { display: 'inline-block' } },
+        React.createElement('style', null, keyframes),
+        React.createElement('div', { style: spinnerStyle })
+      );
+    }
+
+    const funil_id = '748ac627-a091-4888-a6b0-eedc28fb4ef1'
+    const funil_name = 'Aula 3'
+
+    const app = window.app
+    const { useState, useEffect, createContext, useContext, useRef, useCallback } = React;
+
+
+    function cn(...classes) {
+      return classes.filter(Boolean).join(' ');
+    }
+
+
+const Card = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
+    )}
+    {...props}
+  />
+));
+Card.displayName = "Card";
+
+const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+));
+CardHeader.displayName = "CardHeader";
+
+const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+));
+CardTitle.displayName = "CardTitle";
+
+const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+));
+CardDescription.displayName = "CardDescription";
+
+const CardContent = React.forwardRef(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+));
+CardContent.displayName = "CardContent";
+
+const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+));
+CardFooter.displayName = "CardFooter";
+
+    // Table Component
+    function Table({ className, ...props }) {
+      return (
+        <div className="relative w-full overflow-auto">
+          <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
+        </div>
+      );
+    }
+
+    // TableHeader Component
+    function TableHeader({ className, ...props }) {
+      return <thead className={cn('[&_tr]:border-b', className)} {...props} />;
+    }
+
+    // TableBody Component
+    function TableBody({ className, ...props }) {
+      return <tbody className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
+    }
+
+    // TableFooter Component
+    function TableFooter({ className, ...props }) {
+      return (
+        <tfoot
+          className={cn(
+            'border-t bg-muted/50 font-medium [&>tr]:last:border-b-0',
+            className
+          )}
+          {...props}
+        />
+      );
+    }
+
+    // TableRow Component
+    function TableRow({ className, ...props }) {
+      return (
+        <tr
+          className={cn(
+            'border-b transition-colors hover:bg-muted data-[state=selected]:bg-muted',
+            className
+          )}
+          {...props}
+        />
+      );
+    }
+
+    // TableHead Component
+    function TableHead({ className, ...props }) {
+      return (
+        <th
+          className={cn(
+            'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+            className
+          )}
+          {...props}
+        />
+      );
+    }
+
+    // TableCell Component
+    function TableCell({ className, ...props }) {
+      return (
+        <td
+          className={cn(
+            'p-4 align-middle [&:has([role=checkbox])]:pr-0',
+            className
+          )}
+          {...props}
+        />
+      );
+    }
+
+    // TableCaption Component
+    function TableCaption({ className, ...props }) {
+      return (
+        <caption
+          className={cn('mt-4 text-sm text-muted-foreground', className)}
+          {...props}
+        />
+      );
+    }
+
+    // Variant utility function
+    function getVariantClasses(variant, size, additionalClasses) {
+      const variants = {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      };
+
+      const sizes = {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      };
+
+      return cn(
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+        variants[variant] || variants.default,
+        sizes[size] || sizes.default,
+        additionalClasses
+      );
+    }
+
+    // Button Component
+    function Button({
+      className,
+      variant = "default",
+      size = "default",
+      asChild = false,
+      ...props
+    }) {
+      const Component = asChild ? 'span' : 'button'; // Default to <button> unless `asChild` is true
+      return (
+        <Component
+          className={getVariantClasses(variant, size, className)}
+          {...props}
+        />
+      );
+    }
+
+    const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
+      <div
+        ref={ref}
+        className={cn(
+          "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+          className
+        )}
+        {...props}
+      >
+        <div
+          className="h-full flex-1 bg-primary transition-all"
+          style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+        />
+      </div>
+    ));
+
+
+
+
+
+const Avatar = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+    {...props}
+  />
+));
+Avatar.displayName = "Avatar";
+
+const AvatarImage = React.forwardRef(({ className, ...props }, ref) => (
+  <img
+    ref={ref}
+    className={cn("aspect-square h-full w-full object-cover", className)}
+    {...props}
+  />
+));
+AvatarImage.displayName = "AvatarImage";
+
+const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    )}
+    {...props}
+  />
+));
+AvatarFallback.displayName = "AvatarFallback";
+
+    const stepComponentsJSX = {
+      text: (props) => {
+          const { headline, description, color, type } = props
+          return <div className="w-full flex flex-col gap-2 text-center">
+              <h2 className="text-lg font-semibold" style={{
+                  color
+              }} dangerouslySetInnerHTML={{
+                  __html: headline
+              }}></h2>
+          </div>
+      },
+      image: (props) => {
+          const { src, alt } = props
+          return <div className="w-full flex flex-col gap-2 text-center">
+              <img src={src} alt={alt} className="" />
+              <span className="text-sm text-muted-foreground">
+                  {alt}
+              </span>
+          </div>
+      },
+      timer: React.forwardRef(function Timer(props, ref) {
+          const {
+              type,
+              headline,
+              description,
+              end_description,
+              duration,
+              date,
+              use,
+              text_color,
+              bg_color,
+              reset
+          } = props
+          const [remainingText, setRemainingText] = React.useState(`${0}d ${0}h ${0}m ${0}s`)
+          const [done, setDone] = React.useState(false)
+
+          React.useEffect(() => {
+              const initalRenderDate = new Date()
+              if (use === 'date' && date && date instanceof Date) {
+                  const setTime = () => {
+                      const now = new Date()
+                      const diff = date.getTime() - now.getTime()
+                      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+                      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+                      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+                      setRemainingText(`${days}d ${hours}h ${minutes}m ${seconds}s`)
+                  }
+                  const interval = setInterval(setTime, 1000)
+                  setTime()
+                  return () => clearInterval(interval)
+              } else if (use === 'duration' && duration) {
+                  // make it a countdown
+                  let countSeconds = duration
+                  const setTime = () => {
+                      countSeconds -= 1
+                      setRemainingText(`${Math.floor(countSeconds / 60)}m ${countSeconds % 60}s`)
+                      if (countSeconds <= 0) {
+                          setDone(true)
+                          clearInterval(interval)
+                      }
+                  }
+                  const interval = setInterval(setTime, 1000)
+                  setTime()
+                  return () => clearInterval(interval)
+              }
+          }, [reset, date, duration, use])
+
+          return <div ref={ref} className="w-full flex flex-col gap-2 py-2 text-center rounded-md" style={{
+              backgroundColor: bg_color,
+          }}>
+              {
+                  !done ? (
+                      <div className="flex flex-col gap-1 items-center justify-center">
+                          <div className="text-md font-semibold" style={{
+                              color: text_color,
+                          }}>
+                              {headline}
+                              <br />
+                              <span className="text-sm opacity-50">
+                                  {description}
+                              </span>
+                          </div>
+                          <div className="text-md font-medium" style={{
+                              color: text_color,
+                          }}>
+                              {remainingText}
+                          </div>
+                      </div>
+                  ) : (
+                      <span className="text-sm font-medium" style={{
+                          color: text_color,
+                      }}>
+                          {end_description}
+                      </span>
+                  )
+              }
+          </div>
+      }),
+      spacer: React.forwardRef(function Spacer(props, ref) {
+          const {
+              height,
+          } = props
+          return <div ref={ref} className="shrink-0 h-[1px] w-full" style={{
+              marginTop: height,
+              marginBottom: height,
+              backgroundColor: '#e5e5e5',
+          }}></div>
+      }),
+      benefits: React.forwardRef(function Benefits(props, ref) {
+        const {
+            headline,
+            description,
+            comparisons,
+            benefits,
+        } = props
+        
+        return <div ref={ref} className="w-full flex flex-col gap-2 text-center">
+            <Table>
+                <TableCaption>{description}</TableCaption>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[100px]">{headline}</TableHead>
+                        {
+                            comparisons.map((comparison) => {
+                                return <TableHead className="text-center" key={comparison}>{comparison}</TableHead>
+                            })
+                        }
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {
+                        Object.entries(benefits).map(([rowId, row]) => (
+                            <TableRow key={rowId}>
+                                <TableCell className="font-medium">{row.title}</TableCell>
+                                {
+                                    row.comparisons.map((comparison) => {
+                                        return <TableCell key={comparison+rowId}>{comparison}</TableCell>
+                                    })
+                                }
+                            </TableRow>
+                        ))
+                    }
+                </TableBody>
+            </Table>
+        </div>
+      }),
+      button: React.forwardRef(function ButtonComponent(props, ref) {
+        const {
+            label,
+            destiny,
+            facebook_event,
+            facebook_custom_event,
+            delay,
+            destiny_url,
+            color,
+            onNext,
+            is_end
+        } = props
+        const [remainingDelay, setRemainingDelay] = React.useState(delay || 0)
+        React.useEffect(() => {
+            setRemainingDelay(delay || 0)
+            // incrementally decrease the remaining delay
+            const interval = setInterval(() => {
+                setRemainingDelay(prevRemainingDelay => {
+                    if (prevRemainingDelay <= 0) {
+                        clearInterval(interval)
+                        return 0
+                    }
+                    return prevRemainingDelay - 1
+                })
+            }, 1000)
+            return () => clearInterval(interval)
+        }, [delay])
+        const handleClick = () => {
+          (async () => {
+            if (is_end) {
+                try {
+                  const db = firestore;
+                  const endCollection = collection(db, 'end');
+                  const newEnd = {
+                    id: localStorage.getItem('uuid'),
+                    date: new Date(),
+                    funil_id: funil_id,
+                    user_info: collectUserInfo(),
+                  }
+                  await addDoc(endCollection, newEnd);
+                } catch (error) {
+                  console.log(error)
+                  alert("Erro ao salvar o acesso, tente novamente")
+                }
+            }
+            if (destiny === 'next') {
+              onNext()
+            } else if (destiny === 'url' && destiny_url) {
+                if (!destiny_url) return alert('URL não informada')
+                window.open(destiny_url, '_blank')
+            }
+          })()
+        }
+        return <div ref={ref} className="w-full flex flex-col gap-2 text-center">
+            <Button 
+                disabled={remainingDelay > 0} 
+                onClick={handleClick} 
+                className="w-full" 
+                style={{
+                    backgroundColor: color,
+                }}
+            >
+                {remainingDelay > 0 ? `${remainingDelay}s` : label}
+            </Button>
+        </div>
+      }),
+      progress: React.forwardRef(function ProgressComponent(props, ref) {
+          const {
+              title,
+              final_progress,
+              duration,
+          } = props
+          const [progress, setProgress] = React.useState(0)
+          const [remainingTime, setRemainingTime] = React.useState(duration)
+
+          React.useEffect(() => {
+              const interval = setInterval(() => {
+                  setRemainingTime(prevRemainingTime => {
+                      if (prevRemainingTime <= 0) {
+                          clearInterval(interval)
+                          return 0
+                      }
+                      return prevRemainingTime - 1
+                  })
+              }, 1000)
+              return () => clearInterval(interval)
+          }, [duration])
+
+          React.useEffect(() => {
+              // Calculate the progress percentage based on elapsed time
+              setProgress(
+                  ((duration - remainingTime) / duration) * final_progress
+              );
+          }, [remainingTime, duration, final_progress]);
+
+          return <div ref={ref} className="w-full flex flex-col gap-2 text-center">
+              <div className="w-full text-center">{title}</div>
+              <Progress value={progress} className="w-full" />
+          </div>
+      }),
+      feedback: React.forwardRef(function FeedbackComponent(props, ref) {
+        const {
+            carousel,
+            feedbacks,
+        } = props
+        
+        return <div ref={ref} className="w-full flex flex-col gap-2 text-center px-10">
+                    {
+                        feedbacks.map((feedback, index) => {
+                            return <Card className="w-full">
+                                        <CardContent className="p-2">
+                                            <CardHeader className="flex flex-col gap-2 items-center justify-center">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                                    <AvatarFallback>{index+1}.</AvatarFallback>
+                                                </Avatar>
+                                                <CardTitle>
+                                                    {feedback.title}
+                                                    <br />
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {feedback.social}
+                                                    </span>
+                                                </CardTitle>
+                                                <CardDescription>
+                                                    {
+                                                        feedback.stars > 0 && (
+                                                            <div className="flex flex-row items-center justify-center gap-2 mb-2">
+                                                                {
+                                                                    new Array(feedback.stars).fill(0).map((_, index) => {
+                                                                        return <i data-lucide="star" key={index} className="h-4 w-4 text-yellow-300" />
+                                                                    })
+                                                                }
+                                                                {
+                                                                    new Array(5 - feedback.stars).fill(0).map((_, index) => {
+                                                                        return <i data-lucide="star" key={index} className="h-4 w-4 text-gray-300" />
+                                                                    })
+                                                                }
+                                                            </div>
+                                                        )
+                                                    }
+                                                    <div>
+                                                        {feedback.description}
+                                                    </div>
+                                                </CardDescription> 
+                                            </CardHeader>
+                                        </CardContent>
+                                    </Card>
+                        })
+                    }
+        </div>
+      }),
+    }
+    function FunilContainer({
+      funil, funilStructure
+    }) {
+      const [activeStepIndex, setActiveStepIndex] = useState(0)
+
+      const activeStep = funilStructure.steps[activeStepIndex]
+      const handleNext = () => {
+        setActiveStepIndex(prevActiveStepIndex => {
+          if (prevActiveStepIndex === funilStructure.steps.length - 1) {
+            return 0
+          }
+          return prevActiveStepIndex + 1
+        })
+      }
+      return (
+        <div className="bg-white overflow-y-auto fade-in w-full h-[90%] min-w-[300px] max-w-[600px] flex flex-col gap-2 items-start p-4 rounded-md shadow-md">
+          {
+            activeStep.contents.map((component, index) => {
+              const FoundComponent = stepComponentsJSX[component.type]
+              if (!FoundComponent) {
+                return null
+              }
+              return <FoundComponent onNext={handleNext} {...component} index={index} />
+            })
+          }
+        </div>
+      )
+    }
+
+    function collectUserInfo() {
+      const userInfo = {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+        referrer: document.referrer || "Direct",
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        colorDepth: window.screen.colorDepth,
+        online: navigator.onLine,
+        cookiesEnabled: navigator.cookieEnabled,
+      };
+
+      return userInfo;
+    }
+    function App() {
+      const [loading, setLoading] = useState(true)
+      const [funil, setFunil] = useState(null)
+      const [funilStructure, setFunilStructure] = useState(null)
+
+      useEffect(() => {
+        (async () => {
+          try {
+            const db = firestore;
+            const docRef = doc(db, 'funis-base', funil_id);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+              setFunil(docSnap.data());
+  
+              const docRefStructure = doc(db, 'funis-structure', funil_id);
+              const docSnapStructure = await getDoc(docRefStructure);
+              if (docSnapStructure.exists()) {
+                setFunilStructure(docSnapStructure.data());
+              }
+              const acessosCollection = collection(db, 'acessos')
+              const newAcesso = {
+                id: localStorage.getItem('uuid'),
+                date: new Date(),
+                funil_id: funil_id,
+                user_info: collectUserInfo(),
+              }
+              await addDoc(acessosCollection, newAcesso);
+              setLoading(false)
+            } else {
+              alert('Funil não encontrado')
+            }
+          } catch (error) {
+            console.log(error)
+            alert("Erro ao carregar o funil, tente outro link")
+          }
+        })()
+      }, [])
+      return (
+        <div className="w-full bg-neutral-100 h-screen flex flex-col justify-center items-center">
+          {
+            loading ? <SimpleSpinner/> : <FunilContainer funil={funil} funilStructure={funilStructure} />
+          } 
+        </div>
+      );
+    }
+    // if uuid is not set, generate a new one
+    if (!localStorage.getItem('uuid')) {
+      localStorage.setItem('uuid', uuidv4());
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
